@@ -1,61 +1,64 @@
-import java.util.Arrays;
+public class AppointmentBook {
+    private boolean[][] periods;
 
-public class AppointmentBook
-{
-
-    Private boolean minutesAvail[][] = new boolean[8][60];
-    for (int i = 0; i < minutesAvail.length; i++) {
-        Arrays.fill(minutesAvail[i], true);
+    public AppointmentBook() {
+        periods = new boolean[8][60];
+        // Initialize all minutes as free
+        for (int p = 0; p < 8; p++) {
+            for (int m = 0; m < 60; m++) {
+                periods[p][m] = true;
+            }
+        }
     }
-    
-private boolean isMinuteFree(int period, int startMinute, int duration)
-    {
-        if((period <= 8 and period >=1) && ((startMinute + duration) < 60) && startMinute >=0 ) {
-            for(int i = startMinute; i < (startMinute + duration); i++ );{
-                if( minutesAvail[period][i] == false ){
-                    return false
+
+    public void initializePeriod(int period, boolean[] availability) {
+        for (int m = 0; m < 60; m++) {
+            periods[period - 1][m] = availability[m];
+        }
+    }
+
+    private boolean isMinuteFree(int period, int minute) {
+        return periods[period - 1][minute];
+    }
+
+    private void reserveBlock(int period, int startMinute, int duration) {
+        for (int m = startMinute; m < startMinute + duration; m++) {
+            periods[period - 1][m] = false;
+        }
+    }
+
+    public int findFreeBlock(int period, int duration) {
+        for (int start = 0; start <= 60 - duration; start++) {
+            boolean blockFree = true;
+            for (int i = start; i < start + duration; i++) {
+                if (!isMinuteFree(period, i)) {
+                    blockFree = false;
+                    break;
                 }
             }
-            return true
+            if (blockFree) {
+                return start;
+            }
         }
-        else{
-            print("err: invalid period and or minute.")
-            return false
-        }
+        return -1;
     }
 
-
-/**
-* Marks the block of minutes that starts at startMinute in period and
-* is duration minutes long as reserved for an appointment
-* Preconditions: 1 <= period <= 8; 0 <= startMinute <= 59;
-* 1 <= duration <= 60
-*/
-private void reserveBlock(int period, int startMinute, int duration)
-{
-    for(int i = startMinute; i < (startMinute + duration); i++ );{
-        minutesAvail[period][i] = false
+    public boolean makeAppointment(int startPeriod, int endPeriod, int duration) {
+        for (int p = startPeriod; p <= endPeriod; p++) {
+            int startMinute = findFreeBlock(p, duration);
+            if (startMinute != -1) {
+                reserveBlock(p, startMinute, duration);
+                return true;
+            }
+        }
+        return false;
     }
-}
-/**
-* Searches for the first block of duration free minutes during period, as described in
-* part (a). Returns the first minute in the block if such a block is found or returns -1 if no
-* such block is found.
-* Preconditions: 1 <= period <= 8; 1 <= duration <= 60
-*/
-public int findFreeBlock(int period, int duration)
-{ /* to be implemented in part (a) */ }
-/**
-* Searches periods from startPeriod to endPeriod, inclusive, for a block
-* of duration free minutes, as described in part (b). If such a block is found,
-* calls reserveBlock to reserve the block of minutes and returns true; otherwise
-* returns false.
-* Preconditions: 1 <= startPeriod <= endPeriod <= 8; 1 <= duration <= 60
-*/
-public boolean makeAppointment(int startPeriod, int endPeriod,
 
-int duration)
-
-{ /* to be implemented in part (b) */ }
-// There may be instance variables, constructors, and methods that are not shown.
+    public void displayPeriod(int period) {
+        System.out.print("Period " + period + " Availability: ");
+        for (int m = 0; m < 60; m++) {
+            System.out.print(periods[period - 1][m] ? "1" : "0");
+        }
+        System.out.println();
+    }
 }
